@@ -3,14 +3,42 @@ import sys
 import csv
 import re
 import json
+import datautil as du
 
 list_features = []
+'''-------------Feature List----------------'''
+
 features = ['Node Type','Join Type','Command','Startup Cost',
             'Total Cost','Plan Rows','Plan Width','Output','Index Cond',
             'Order By','Recheck Cond','Filter','Workers Planned','Function Call',
             'TID Cond','Join Filter','Merge Cond','Hash Cond','One-Time Filter',
             'Strategy','Partial Mode','Operation','Parent Relationship',
             'Custom Plan Provider','Parallel Aware','Schema','Alias']
+
+'''---------------Enum type lists-----------------'''
+
+#List of all node types
+nodetype = ['result','projectset','insert','update','delete',
+             'append','mergeappend','recursiveunion','bitmapand','bitmapor',
+             'nestedloop','merge','seqscan','samplescan','gather',
+             'gathermerge','indexscan','indexonlyscan','bitmapindexscan','tidscan',
+             'subqueryscan','functionscan','bitmapheapscan','tablefunctionscan','valuesscan',
+             'ctescan','namedtuplestorescan','worktablescan','foreignscan','foreigninsert',
+             'foreignupdate','foreigndelete','materialize','sort','group',
+             'aggregate','groupaggregate','mixedaggregate','windowagg','unique',
+             'setop','hashsetop','lockrows','limit','hash']
+jointype = ['Left','Full','Right','Semi','Anti']
+command = ['Intersect','Intersect All','Except','Except All']
+strategy = ['Plain','Sorted','Hashed','Mixed','Sorted','Hashed']
+partialmode = ['Partial','Finalize','Simple']
+operation = ['Insert','Update','Delete']
+parentrelationship = ['Inner','Outer','Null']
+enum_dict = {'nodetype':nodetype,'jointype':jointype,'command':command,'strategy':strategy,
+             'partialmode':partialmode,'operation':operation,'parentrelationship':parentrelationship}
+
+'''-----------------Int type feature list ------- '''
+int_features = ['startupcost','totalcost','planrows','planwidth','workersplanned','parallelaware']
+bool_features= ['parallelaware']
 
 def get_plan():
     file_name = sys.argv[1]
@@ -39,7 +67,7 @@ def get_plan():
                            plan = json.loads(plan)
                            plans.append(plan)
                        except ValueError:
-                        i   print('not a valid json structure')
+                           print('not a valid json structure')
     return(plans)
 
 def get_features(plan):
@@ -54,18 +82,22 @@ def get_features(plan):
             get_features(p)
     return feature_vect
 
-def valtoreal(key,value):
+def valtoreal(feature,value):
     '''Assigns the right function from transtype module to the correspondent data type to transform it to real.'''
-    trans_funcs = (trans_nodetype,trans_jointype,trans_command,trans_startupcost,trans_totalcost,
-                   trans_planrow,trans_planwidth,trans_output,trans_indexcond,trans_orderby,
-                   trans_recheckcond,trans_filter,trans_workersplanned,trans_funccall,
-                   trans_tidcond,trans_joinfilter,trans_mergecond,trans_hashcond,trans_onetimefilter,
-                   trans_strategy,trans_partialmode,trans_operation,trans_parentrelationship,
-                   trans_customplanpro,trans_parallelaware,trans_schema,trans_alias)
-    #mimics a switch statement
-    trans_cases = dict(zip(features,trans_funcs))
-
-    trans_cases.get(key,)(value)
+    '''trans_funcs = (nodetypetoreal,jointypetoreal,commandtoreal,startupcosttoreal,totalcosttoreal,
+                   planrowtoreal,planwidthtoreal,outputtoreal,indexcondtoreal,orderbytoreal,
+                   recheckcondtoreal,filtertoreal,workersplannedtoreal,funccalltoreal,
+                   tidcondtoreal,joinfiltertoreal,mergecondtoreal,hashcondtoreal,onetimefiltertoreal,
+                   strategytoreal,partialmodetoreal,operationtoreal,parentrelationshiptoreal,
+                   customplanprotoreal,parallelawaretoreal,schematoreal,aliastoreal)
+    '''
+    feature,value = du.clean_name(feature,value)
+    if(feature in enum_dict.keys()): return(du.enumtoreal(enum_dict[feature],value))
+    elif(feature in int_features): return(float(value))
+    elif(feature in bool_features): return(float(int(value)))
+    else:
+        print("%s is not of a known type." .format(feature))
+        return(0)
 
 def init_csv():
     '''Set the header of a csv file with all the features'''
@@ -81,11 +113,12 @@ def init_csv():
             print(row)
     '''
 #Init data csv file with header
-init_csv()
+'''init_csv()
 feature_vect = []
 feature_vect.append(u'Query Text')
 for elmt in get_plan():
     print(elmt)
     print(get_features(elmt['Plan']))
     print('\n')
-
+    '''
+print(valtoreal('parallelaware','true'))
