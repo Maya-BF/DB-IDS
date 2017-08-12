@@ -1,0 +1,1 @@
+[{"SELECT":{"targetList":[{"RESTARGET":{"val":{"A_CONST":{"val":1,"location":7,"type":"integer"}},"location":7}}],"op":0}}]
