@@ -7,43 +7,24 @@ def convert(jsondoc):
     print('pythondict: {}' .format(jread))
     walkjson(jread)
 
-def walkjson(v,tree="",vcp="",openlist=False,opendict=False):
-    #pdb.set_trace()
-    #if(vcp is None):
-    vcp = v.copy()
-    if isinstance(v,list):
-        for i,v2 in enumerate(v):
-            openlist = True
-            tree += '['
-            if(isinstance(v2,str) or isinstance(v2,int)):
-                tree += '[{}]' .format(v2)
-                vcp.pop(i)
-            else:
-                walkjson(v2,tree,vcp,openlist,opendict)
-            tree+= ']'
-        if(opendict):
-            tree += ')'
-    elif isinstance(v,dict):
+def walkjson(pyquery):
+    global tree
+    if isinstance(pyquery,list):
         tree += '('
-        for k,v2 in v.items():
-            opendict = True
-            tree += '{}' .format(k)
-            if(isinstance(v2,str) or isinstance(v2,int)):
-                tree += '({})' .format(v2)
-                vcp.pop(k)
-            else:
-                walkjson(v2,tree,vcp,openlist,opendict)
+        for value in pyquery:
+            walkjson(value)
+        tree+= ')'
+    elif isinstance(pyquery,dict):
+        tree += '('
+        for key,value in pyquery.items():
+            tree += '{}' .format(key)
+            walkjson(value)
         tree += ')'
-        if(openlist):
-            tree += ']'
+    else:
+        tree += '({})' .format(pyquery)
 
-    if (not vcp):
-        print(tree)
-        print('END')
 
 if __name__ == '__main__':
-    #tab = {'A':{'B':'C'}}
-    #walkjson(tab)
+    tree = ''
     convert('querytree.json')
-
-
+    print(tree)
