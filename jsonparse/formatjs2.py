@@ -2,6 +2,10 @@ import json
 import pdb
 
 def convert(jsondoc):
+    '''
+    CONVERT: Utility function that converts a json block into SVMLight format
+    Input: Name of a json file
+    '''
     json_data = open(jsondoc,'r+')
     jread = json.loads(json_data.read())
     print('pythondict: {}' .format(jread))
